@@ -15,7 +15,7 @@ public class Frame extends JFrame {
 	public Frame(String name) {
 		this.setName(name);
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-		this.setSize(700, 400);
+		this.setSize(800, 450);
 		this.setVisible(true);
 		items = fr.loadOnStart();
 	}

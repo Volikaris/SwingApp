@@ -5,14 +5,21 @@ import java.io.Serializable;
 public class Item implements Serializable {
 
 	private static final long serialVersionUID = -8188532406518588259L;
-	private int ID;
-	private String type, name, value;
+	private int ID, amount;
+	private String type, name, dimX, dimY;
+	private Boolean left, right, top, bottom;
 	
-	public Item(int ID, String type, String name, String value) {
+	public Item(int ID, String type, String name, String dimX, String dimY, int amount, Boolean left, Boolean right, Boolean top, Boolean bottom) {
 		this.ID = ID;
 		this.type = type;
 		this.name = name;
-		this.value = value;
+		this.dimX = dimX;
+		this.dimY = dimY;
+		this.amount = amount;
+		this.left = left;
+		this.right = right;
+		this.top = top;
+		this.bottom = bottom;
 	}
 
 	public int getID() {
@@ -39,23 +46,76 @@ public class Item implements Serializable {
 		this.name = name;
 	}
 
-	public String getValue() {
-		return value;
+	public String getDimX() {
+		return dimX;
 	}
 
-	public void setValue(String value) {
-		this.value = value;
+	public void setDimX(String dimX) {
+		this.dimX = dimX;
 	}
 	
 	public String getInfo() {
-		return getID() + " " + getType() + " " + getName() + " " + getValue();
+		return getID() + " " + getType() + " " + getName() + " " + getDimX() + " " + getDimY() + " " + getAmount() + " " + getLeft() + " " + getRight() + " " + getTop() + " " + getBottom();
 	}
 	
-	public void edit(int id, String type, String name, String value) {
+	public void edit(int id, String type, String name, String dimX, String dimY, int amount, Boolean left, Boolean right, Boolean top, Boolean bottom) {
 		this.ID = id;
 		this.type = type;
 		this.name = name;
-		this.value = value;
+		this.dimX = dimX;
+		this.dimY = dimY;
+		this.amount = amount;
+		this.left = left;
+		this.right = right;
+		this.top = top;
+		this.bottom = bottom;
 	}
 
+	public String getDimY() {
+		return dimY;
+	}
+
+	public void setDimY(String dimY) {
+		this.dimY = dimY;
+	}
+
+	public Boolean getLeft() {
+		return left;
+	}
+
+	public void setLeft(Boolean left) {
+		this.left = left;
+	}
+
+	public Boolean getRight() {
+		return right;
+	}
+
+	public void setRight(Boolean right) {
+		this.right = right;
+	}
+
+	public Boolean getTop() {
+		return top;
+	}
+
+	public void setTop(Boolean top) {
+		this.top = top;
+	}
+
+	public Boolean getBottom() {
+		return bottom;
+	}
+
+	public void setBottom(Boolean bottom) {
+		this.bottom = bottom;
+	}
+
+	public int getAmount() {
+		return amount;
+	}
+
+	public void setAmount(int amount) {
+		this.amount = amount;
+	}
 }

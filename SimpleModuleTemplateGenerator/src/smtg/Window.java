@@ -5,7 +5,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -19,26 +18,23 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JToolBar;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
 
 public class Window {
-	private static JTextField txtType;
-	private static JTextField txtName;
-	private static JTextField txtValue;
-	private static JTextField txtID;
+	private static JTextField txtParent, txtName, txtX, txtY, txtID, txtAmount, txtGenX, txtGenY, txtGenAmount;
 	private static JTable table;
-	private static boolean isBeingAdded = false;
-	private static boolean isBeingEdited = false;
+	private static boolean isBeingAdded = false, isBeingEdited = false, left, right, top, bottom;
+	private static JRadioButton rbLeft, rbRight, rbTop, rbBottom;
 
 	@SuppressWarnings("unused")
 	private static void createAndShowGUI() {
@@ -51,10 +47,11 @@ public class Window {
 		///// /////
 		///// FRAME SETUP && READER/WRITER
 		final Frame frmSimpleSwingApplication = new Frame("YSGIG");
-		frmSimpleSwingApplication.setTitle("Simple Swing Application 1.1");
+		frmSimpleSwingApplication.setTitle("Quichen 1.11");
 		final FileWriter fw = frmSimpleSwingApplication.getFw();
 		final FileReader fr = frmSimpleSwingApplication.getFr();
 		final ArrayList<Item> items = frmSimpleSwingApplication.getItems();
+		final InputLogic il = new InputLogic();
 
 		JPanel pTop = new JPanel();
 		frmSimpleSwingApplication.getContentPane().add(pTop, BorderLayout.NORTH);
@@ -64,12 +61,16 @@ public class Window {
 		pBottom.setBackground(Color.LIGHT_GRAY);
 		frmSimpleSwingApplication.getContentPane().add(pBottom, BorderLayout.SOUTH);
 
+		final JScrollPane spLeft = new JScrollPane();
+		spLeft.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		spLeft.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		frmSimpleSwingApplication.getContentPane().add(spLeft, BorderLayout.WEST);
 		final JPanel pLeft = new JPanel();
+		spLeft.setViewportView(pLeft);
 		pLeft.setVisible(false);
-		frmSimpleSwingApplication.getContentPane().add(pLeft, BorderLayout.WEST);
 
 		JScrollPane spCenter = new JScrollPane();
-		spCenter.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		spCenter.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		frmSimpleSwingApplication.getContentPane().add(spCenter, BorderLayout.CENTER);
 		JPanel pCenter = new JPanel();
 		spCenter.setViewportView(pCenter);
@@ -82,6 +83,7 @@ public class Window {
 		JButton btnSubmit = new JButton("Submit");
 		JButton btnClear = new JButton("Clear");
 		JButton btnNew = new JButton("New");
+		JButton btnGenerate = new JButton("Generate");
 		JButton btnEdit = new JButton("Edit");
 		final JButton btnLoad = new JButton("Load");
 		final JButton btnSave = new JButton("Save");
@@ -90,10 +92,19 @@ public class Window {
 		JButton btnQuit = new JButton("Quit");
 
 		///// LABELS
-		JLabel lblType = new JLabel("Type");
+		JLabel lblParent = new JLabel("Parent");
 		JLabel lblName = new JLabel("Name");
-		JLabel lblValue = new JLabel("Value");
+		JLabel lblX = new JLabel("DimX");
 		JLabel lblID = new JLabel("ID");
+		JLabel lblY = new JLabel("DimY");
+		JLabel lblNewLabel = new JLabel(" Left     Right      Top     Bottom");
+		JLabel lblAmount = new JLabel("Amount");
+
+		///// RADIOBUTTONS
+		rbLeft = new JRadioButton("");
+		rbRight = new JRadioButton("");
+		rbTop = new JRadioButton("");
+		rbBottom = new JRadioButton("");
 
 		///// TEXTPANES
 		JTextPane txtBottomOne = new JTextPane();
@@ -110,49 +121,44 @@ public class Window {
 		txtCenter.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		txtCenter.setDisabledTextColor(new Color(0, 0, 0));
 		txtCenter.setEnabled(false);
-		txtCenter.setText(
-				"Here should be loaded a default list.\r\nIf it's not, no worries - you're probably running the program first time.\r\nElse check if you have the file default.sav or if it is in the main directory.");
+		txtCenter.setText("Welcome to Quichen - A quick way to do cut forms for kitchen.");
 
 		///// TEXTFIELDS
-		txtType = new JTextField();
-		txtType.setColumns(1);
-		txtName = new JTextField();
-		txtName.setColumns(1);
-		txtValue = new JTextField();
-		txtValue.setColumns(1);
-		txtID = new JTextField();
-		AbstractDocument doc = (AbstractDocument) txtID.getDocument();
-		final int maxCh = 5;
-		doc.setDocumentFilter(new DocumentFilter() {
-			public void replace(FilterBypass fb, int offs, int length, String str, AttributeSet a)
-					throws BadLocationException {
-				String text = fb.getDocument().getText(0, fb.getDocument().getLength());
-				text += str;
-				if ((fb.getDocument().getLength() + str.length() - length) <= maxCh && text.matches("[0-9]+")) {
-					super.replace(fb, offs, length, str, a);
-				} else {
-					Toolkit.getDefaultToolkit().beep();
-				}
-
-			}
-
-			public void insertString(FilterBypass fb, int offs, String str, AttributeSet a)
-					throws BadLocationException {
-
-				String text = fb.getDocument().getText(0, fb.getDocument().getLength());
-				text += str;
-				if ((fb.getDocument().getLength() + str.length()) <= maxCh && text.matches("[0-9]+")) {
-					super.insertString(fb, offs, str, a);
-				} else {
-					Toolkit.getDefaultToolkit().beep();
-				}
-			}
-		});
-		txtID.setColumns(1);
+		txtParent = new JTextField(1);
+		txtParent.setHorizontalAlignment(SwingConstants.CENTER);
+		txtName = new JTextField(1);
+		txtName.setHorizontalAlignment(SwingConstants.CENTER);
+		txtX = new JTextField(1);
+		txtX.setHorizontalAlignment(SwingConstants.CENTER);
+		il.setIntFilter(txtX);
+		txtID = new JTextField(1);
+		txtID.setHorizontalAlignment(SwingConstants.CENTER);
+		il.setIntFilter(txtID);
 		txtID.setEditable(false);
+		txtAmount = new JTextField(1);
+		txtAmount.setHorizontalAlignment(SwingConstants.CENTER);
+		il.setIntFilter(txtAmount);
+		txtY = new JTextField(1);
+		txtY.setHorizontalAlignment(SwingConstants.CENTER);
+		il.setIntFilter(txtY);
+		txtGenX = new JTextField(1);
+		txtGenX.setHorizontalAlignment(SwingConstants.CENTER);
+		il.setIntFilter(txtGenX);
+		txtGenY = new JTextField(1);
+		txtGenY.setHorizontalAlignment(SwingConstants.CENTER);
+		il.setIntFilter(txtGenY);
+		txtGenAmount = new JTextField(1);
+		txtGenAmount.setHorizontalAlignment(SwingConstants.CENTER);
+		il.setIntFilter(txtGenAmount);
+
+		///// GENERATION WINDOW
+		final JPanel genPanel = new JPanel();
+		genPanel.add(new JLabel("Amount:"));
+		genPanel.add(txtGenAmount);
 
 		///// ADDING STUFF
 		toolBar.add(btnNew);
+		toolBar.add(btnGenerate);
 		toolBar.add(btnEdit);
 		toolBar.add(btnLoad);
 		toolBar.add(btnSave);
@@ -161,36 +167,39 @@ public class Window {
 		toolBar.add(btnQuit);
 
 		///// TABLES
-		table = new JTable(new DefaultTableModel(new Object[][] { { "ID", "Type", "Name", "Value" }, },
-				new String[] { "ID", "Type", "Name", "Value" }));
+		table = new JTable(new DefaultTableModel(
+				new Object[][] {
+						{ "ID", "Parent", "Name", "DimX", "DimY", "Amount", "Left", "Right", "Top", "Bottom" }, },
+				new String[] { "ID", "Parent", "Name", "DimX", "DimY", "Amount", "Left", "Right", "Top", "Bottom" }));
+
+		lblParent.setHorizontalAlignment(SwingConstants.CENTER);
+		lblName.setHorizontalAlignment(SwingConstants.CENTER);
+		lblX.setHorizontalAlignment(SwingConstants.CENTER);
+		lblID.setHorizontalAlignment(SwingConstants.CENTER);
+		lblY.setHorizontalAlignment(SwingConstants.CENTER);
+		lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		lblAmount.setHorizontalAlignment(SwingConstants.CENTER);
+		rbLeft.setHorizontalAlignment(SwingConstants.CENTER);
+		rbRight.setHorizontalAlignment(SwingConstants.CENTER);
+		rbTop.setHorizontalAlignment(SwingConstants.CENTER);
+		rbBottom.setHorizontalAlignment(SwingConstants.CENTER);
 
 		GroupLayout gl_spCenter = new GroupLayout(spCenter);
 		GroupLayout gl_pCenter = new GroupLayout(pCenter);
-		gl_pCenter.setHorizontalGroup(gl_pCenter.createParallelGroup(Alignment.TRAILING)
-				.addGroup(gl_pCenter.createSequentialGroup().addContainerGap()
-						.addGroup(gl_pCenter.createParallelGroup(Alignment.LEADING, false)
-								.addGroup(gl_pCenter.createSequentialGroup()
-										.addComponent(txtCenter, GroupLayout.PREFERRED_SIZE, 325,
-												GroupLayout.PREFERRED_SIZE)
-										.addContainerGap(170, Short.MAX_VALUE))
-								.addGroup(
-										gl_pCenter.createSequentialGroup()
-												.addComponent(table, GroupLayout.PREFERRED_SIZE, 359,
-														GroupLayout.PREFERRED_SIZE)
-												.addContainerGap(136, Short.MAX_VALUE)))));
+		gl_pCenter.setHorizontalGroup(gl_pCenter.createParallelGroup(Alignment.LEADING).addGroup(gl_pCenter
+				.createSequentialGroup().addContainerGap()
+				.addGroup(gl_pCenter.createParallelGroup(Alignment.LEADING)
+						.addComponent(table, GroupLayout.DEFAULT_SIZE, 493, Short.MAX_VALUE).addComponent(txtCenter,
+								GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+				.addContainerGap()));
 		gl_pCenter.setVerticalGroup(gl_pCenter.createParallelGroup(Alignment.LEADING).addGroup(gl_pCenter
 				.createSequentialGroup().addContainerGap()
 				.addComponent(txtCenter, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 						GroupLayout.PREFERRED_SIZE)
 				.addPreferredGap(ComponentPlacement.RELATED)
 				.addComponent(table, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-				.addContainerGap(224, Short.MAX_VALUE)));
+				.addContainerGap(10, Short.MAX_VALUE)));
 		pCenter.setLayout(gl_pCenter);
-		final DefaultTableModel model = (DefaultTableModel) table.getModel();
-
-		for (Item item : items) {
-			model.addRow(new Object[] { item.getID() - 1, item.getType(), item.getName(), item.getValue() });
-		}
 		GroupLayout gl_pBottom = new GroupLayout(pBottom);
 		gl_pBottom.setHorizontalGroup(gl_pBottom.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_pBottom.createSequentialGroup().addGap(106).addComponent(txtBottomOne,
@@ -199,71 +208,119 @@ public class Window {
 				.addGroup(gl_pBottom.createSequentialGroup().addGap(5).addComponent(txtBottomOne,
 						GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)));
 		pBottom.setLayout(gl_pBottom);
+
+		GroupLayout gl_spLeft = new GroupLayout(spLeft);
 		GroupLayout gl_pLeft = new GroupLayout(pLeft);
-		gl_pLeft.setHorizontalGroup(gl_pLeft.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_pLeft.createSequentialGroup()
-						.addGroup(gl_pLeft.createParallelGroup(Alignment.LEADING)
-								.addGroup(gl_pLeft.createSequentialGroup().addGap(71).addComponent(lblName))
-								.addGroup(gl_pLeft.createSequentialGroup().addGap(72).addComponent(lblType))
-								.addGroup(gl_pLeft.createSequentialGroup().addGap(71).addComponent(lblValue)))
-						.addContainerGap())
-				.addGroup(gl_pLeft.createSequentialGroup().addGap(20)
-						.addComponent(txtType, GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE).addGap(21))
-				.addGroup(gl_pLeft.createSequentialGroup().addGap(20)
-						.addComponent(txtName, GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE).addGap(21))
-				.addGroup(gl_pLeft.createSequentialGroup().addGap(20).addComponent(btnClear)
-						.addPreferredGap(ComponentPlacement.RELATED).addComponent(btnSubmit)
-						.addContainerGap(21, Short.MAX_VALUE))
-				.addGroup(gl_pLeft.createSequentialGroup().addGap(79).addComponent(lblID).addContainerGap(79,
-						Short.MAX_VALUE))
-				.addGroup(Alignment.TRAILING,
-						gl_pLeft.createSequentialGroup().addGap(20)
-								.addGroup(gl_pLeft.createParallelGroup(Alignment.TRAILING)
-										.addComponent(txtID, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 128,
+		gl_pLeft.setHorizontalGroup(gl_pLeft.createParallelGroup(Alignment.LEADING).addGroup(gl_pLeft
+				.createSequentialGroup().addContainerGap()
+				.addGroup(gl_pLeft.createParallelGroup(Alignment.LEADING).addGroup(gl_pLeft.createSequentialGroup()
+						.addComponent(txtAmount, GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE).addContainerGap())
+						.addGroup(gl_pLeft.createSequentialGroup().addGroup(gl_pLeft
+								.createParallelGroup(Alignment.TRAILING)
+								.addComponent(txtID, GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)
+								.addComponent(lblID, GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)
+								.addGroup(gl_pLeft.createSequentialGroup()
+										.addComponent(rbLeft, GroupLayout.DEFAULT_SIZE, 21, Short.MAX_VALUE).addGap(18)
+										.addComponent(rbRight, GroupLayout.DEFAULT_SIZE, 21, Short.MAX_VALUE).addGap(18)
+										.addComponent(rbTop, GroupLayout.DEFAULT_SIZE, 21, Short.MAX_VALUE).addGap(18)
+										.addComponent(rbBottom, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
 												Short.MAX_VALUE)
-										.addComponent(txtValue, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 128,
-												Short.MAX_VALUE))
-								.addGap(21)));
+										.addGap(9))
+								.addComponent(lblParent, GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)
+								.addComponent(txtParent, GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)
+								.addComponent(lblName, GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)
+								.addComponent(lblNewLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
+										Short.MAX_VALUE)
+								.addComponent(txtName, GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)
+								.addGroup(gl_pLeft.createSequentialGroup().addComponent(btnClear)
+										.addPreferredGap(ComponentPlacement.RELATED, 25, Short.MAX_VALUE)
+										.addComponent(btnSubmit))
+								.addGroup(gl_pLeft.createSequentialGroup()
+										.addGroup(gl_pLeft.createParallelGroup(Alignment.LEADING)
+												.addComponent(lblX, GroupLayout.PREFERRED_SIZE, 70,
+														GroupLayout.PREFERRED_SIZE)
+												.addComponent(txtX, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 70,
+														Short.MAX_VALUE))
+										.addPreferredGap(ComponentPlacement.RELATED)
+										.addGroup(gl_pLeft.createParallelGroup(Alignment.LEADING)
+												.addComponent(lblY, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 71,
+														GroupLayout.PREFERRED_SIZE)
+												.addComponent(txtY, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 71,
+														Short.MAX_VALUE))
+										.addPreferredGap(ComponentPlacement.RELATED)))
+								.addGap(10))
+						.addGroup(Alignment.TRAILING,
+								gl_pLeft.createSequentialGroup()
+										.addComponent(lblAmount, GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)
+										.addContainerGap()))));
 		gl_pLeft.setVerticalGroup(gl_pLeft.createParallelGroup(Alignment.LEADING).addGroup(gl_pLeft
-				.createSequentialGroup().addContainerGap().addComponent(lblType)
+				.createSequentialGroup().addContainerGap().addComponent(lblParent)
 				.addPreferredGap(ComponentPlacement.RELATED)
-				.addComponent(txtType, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-				.addPreferredGap(ComponentPlacement.RELATED).addComponent(lblName)
-				.addPreferredGap(ComponentPlacement.RELATED)
-				.addComponent(txtName, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-				.addPreferredGap(ComponentPlacement.RELATED).addComponent(lblValue)
-				.addPreferredGap(ComponentPlacement.RELATED)
-				.addComponent(txtValue, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+				.addComponent(txtParent, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 						GroupLayout.PREFERRED_SIZE)
+				.addGap(8).addComponent(lblName).addPreferredGap(ComponentPlacement.RELATED)
+				.addComponent(txtName, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addGroup(gl_pLeft.createParallelGroup(Alignment.BASELINE).addComponent(lblX).addComponent(lblY))
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addGroup(gl_pLeft.createParallelGroup(Alignment.BASELINE)
+						.addComponent(txtX, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+								GroupLayout.PREFERRED_SIZE)
+						.addComponent(txtY, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+								GroupLayout.PREFERRED_SIZE))
+				.addPreferredGap(ComponentPlacement.RELATED).addComponent(lblAmount)
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addComponent(txtAmount, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+						GroupLayout.PREFERRED_SIZE)
+				.addPreferredGap(ComponentPlacement.RELATED).addComponent(lblNewLabel)
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addGroup(gl_pLeft.createParallelGroup(Alignment.LEADING).addComponent(rbLeft).addComponent(rbRight)
+						.addComponent(rbTop).addComponent(rbBottom))
 				.addPreferredGap(ComponentPlacement.RELATED).addComponent(lblID)
 				.addPreferredGap(ComponentPlacement.RELATED)
 				.addComponent(txtID, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-				.addPreferredGap(ComponentPlacement.RELATED, 85, Short.MAX_VALUE)
+				.addPreferredGap(ComponentPlacement.RELATED)
 				.addGroup(
 						gl_pLeft.createParallelGroup(Alignment.BASELINE).addComponent(btnClear).addComponent(btnSubmit))
-				.addContainerGap()));
+				.addContainerGap(10, Short.MAX_VALUE)));
 		pLeft.setLayout(gl_pLeft);
+
+		///// TABLEMODEL
+		final DefaultTableModel model = (DefaultTableModel) table.getModel();
+
+		for (Item item : items) {
+			model.addRow(new Object[] { item.getID() - 1, item.getType(), item.getName(), item.getDimX(),
+					item.getDimY(), item.getAmount(), (item.getLeft()), getBool(item.getRight()),
+					getBool(item.getTop()), getBool(item.getBottom()) });
+		}
 		///// --------------------------------------------------------------------------------------------
 		///// /////
 		///// LISTENERS /////
 
 		btnSubmit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (txtType.getText().isEmpty() || txtName.getText().isEmpty() || txtValue.getText().isEmpty()) {
+				if (txtParent.getText().isEmpty() || txtName.getText().isEmpty() || txtX.getText().isEmpty()) {
 					JOptionPane.showMessageDialog(frmSimpleSwingApplication, "Please input data in all the fields");
 				} else {
 					if (isBeingAdded && !isBeingEdited) {
-						model.addRow(new Object[] { "ID", "Type", "Name", "Value" });
+						model.addRow(new Object[] { "ID", "Parent", "Name", "DimX", "DimY", "Left", "Right", "Top",
+								"Bottom" });
 						txtID.setText(table.getRowCount() + "");
 						table.setValueAt(table.getRowCount() - 1, table.getRowCount() - 1, 0);
-						table.setValueAt(txtType.getText(), table.getRowCount() - 1, 1);
+						table.setValueAt(txtParent.getText(), table.getRowCount() - 1, 1);
 						table.setValueAt(txtName.getText(), table.getRowCount() - 1, 2);
-						table.setValueAt(txtValue.getText(), table.getRowCount() - 1, 3);
-						Item item = new Item(getValue(txtID), txtType.getText(), txtName.getText(), txtValue.getText());
+						table.setValueAt(txtX.getText(), table.getRowCount() - 1, 3);
+						table.setValueAt(txtY.getText(), table.getRowCount() - 1, 4);
+						table.setValueAt(getValue(txtAmount), table.getRowCount() - 1, 5);
+						table.setValueAt(getBool(isLeft()), table.getRowCount() - 1, 6);
+						table.setValueAt(getBool(isRight()), table.getRowCount() - 1, 7);
+						table.setValueAt(getBool(isTop()), table.getRowCount() - 1, 8);
+						table.setValueAt(getBool(isBottom()), table.getRowCount() - 1, 9);
+
+						Item item = new Item(getValue(txtID), txtParent.getText(), txtName.getText(), txtX.getText(),
+								txtY.getText(), getValue(txtAmount), isLeft(), isRight(), isTop(), isBottom());
 						items.add(item);
-						txtType.setText("");
-						txtName.setText("");
-						txtValue.setText("");
+						clearAll();
 						txtCenter.setText("Entry added.");
 					} else if (!isBeingAdded && isBeingEdited) {
 						if (txtID.getText().equalsIgnoreCase("")) {
@@ -275,14 +332,19 @@ public class Window {
 								JOptionPane.showMessageDialog(frmSimpleSwingApplication, "Incorrect ID");
 							} else {
 								table.setValueAt(i, i, 0);
-								table.setValueAt(txtType.getText(), i, 1);
+								table.setValueAt(txtParent.getText(), i, 1);
 								table.setValueAt(txtName.getText(), i, 2);
-								table.setValueAt(txtValue.getText(), i, 3);
-								items.get(i - 1).edit((getValue(txtID)) + 1, txtType.getText(), txtName.getText(),
-										txtValue.getText());
-								txtType.setText("");
-								txtName.setText("");
-								txtValue.setText("");
+								table.setValueAt(txtX.getText(), i, 3);
+								table.setValueAt(txtY.getText(), i, 4);
+								table.setValueAt(getValue(txtAmount), i, 5);
+								table.setValueAt(getBool(isLeft()), i, 6);
+								table.setValueAt(getBool(isRight()), i, 7);
+								table.setValueAt(getBool(isTop()), i, 8);
+								table.setValueAt(getBool(isBottom()), i, 9);
+								items.get(i - 1).edit((getValue(txtID)) + 1, txtParent.getText(), txtName.getText(),
+										txtX.getText(), txtY.getText(), getValue(txtAmount), isLeft(), isRight(),
+										isTop(), isBottom());
+								clearAll();
 								txtCenter.setText("Entry edited.");
 							}
 						}
@@ -292,9 +354,7 @@ public class Window {
 		});
 		btnClear.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				txtType.setText("");
-				txtName.setText("");
-				txtValue.setText("");
+				clearAll();
 				txtCenter.setText("Input cleared.");
 			}
 		});
@@ -306,6 +366,11 @@ public class Window {
 				txtCenter.setText("Enter data to add new Item.");
 				txtID.setText(table.getRowCount() + "");
 				txtID.setEditable(false);
+			}
+		});
+		btnGenerate.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				il.generateLogic(frmSimpleSwingApplication);
 			}
 		});
 		btnEdit.addActionListener(new ActionListener() {
@@ -347,8 +412,9 @@ public class Window {
 						clearTable(table, model); /// prepare table for loading
 						items.clear();
 						for (Item item : itemList) {
-							model.addRow(
-									new Object[] { item.getID() - 1, item.getType(), item.getName(), item.getValue() });
+							model.addRow(new Object[] { item.getID() - 1, item.getType(), item.getName(),
+									item.getDimX(), item.getDimY(), item.getAmount(), (item.getLeft()),
+									getBool(item.getRight()), getBool(item.getTop()), getBool(item.getBottom()) });
 							items.add(item);
 						}
 					} else { //// File not found / Input not empty - loading default
@@ -452,6 +518,45 @@ public class Window {
 				frmSimpleSwingApplication.quit(items);
 			}
 		});
+		rbLeft.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				if (left)
+					setLeft(false);
+				else
+					setLeft(true);
+			}
+		});
+		rbRight.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				if (right)
+					setRight(false);
+				else
+					setRight(true);
+			}
+		});
+		rbTop.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				if (top)
+					setTop(false);
+				else
+					setTop(true);
+			}
+		});
+		rbBottom.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				if (bottom)
+					setBottom(false);
+				else
+					setBottom(true);
+			}
+		});
+	}
+
+	public static boolean checkEmpty(JTextField tf) {
+		if (tf.getText().isEmpty())
+			return false;
+		else
+			return true;
 	}
 
 	public static void clearTable(JTable table, DefaultTableModel model) {
@@ -483,5 +588,57 @@ public class Window {
 	 */
 	public void run() {
 		createAndShowGUI();
+	}
+
+	public static boolean isLeft() {
+		return left;
+	}
+
+	public static void setLeft(boolean left) {
+		Window.left = left;
+	}
+
+	public static boolean isRight() {
+		return right;
+	}
+
+	public static void setRight(boolean right) {
+		Window.right = right;
+	}
+
+	public static boolean isTop() {
+		return top;
+	}
+
+	public static void setTop(boolean top) {
+		Window.top = top;
+	}
+
+	public static boolean isBottom() {
+		return bottom;
+	}
+
+	public static void setBottom(boolean bottom) {
+		Window.bottom = bottom;
+	}
+
+	public static void clearAll() {
+		txtID.setText("");
+		txtName.setText("");
+		txtParent.setText("");
+		txtX.setText("");
+		txtY.setText("");
+		txtAmount.setText("");
+		rbLeft.setSelected(false);
+		rbRight.setSelected(false);
+		rbTop.setSelected(false);
+		rbBottom.setSelected(false);
+	}
+
+	public static String getBool(Boolean bool) {
+		if (bool)
+			return "+";
+		else
+			return "";
 	}
 }
